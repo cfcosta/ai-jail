@@ -23,6 +23,21 @@ pub struct Config {
     pub no_mise: Option<bool>,
 }
 
+impl Config {
+    pub fn gpu_enabled(&self) -> bool {
+        self.no_gpu != Some(true)
+    }
+    pub fn docker_enabled(&self) -> bool {
+        self.no_docker != Some(true)
+    }
+    pub fn display_enabled(&self) -> bool {
+        self.no_display != Some(true)
+    }
+    pub fn mise_enabled(&self) -> bool {
+        self.no_mise != Some(true)
+    }
+}
+
 fn config_path() -> PathBuf {
     Path::new(CONFIG_FILE).to_path_buf()
 }
@@ -465,6 +480,36 @@ another_removed_field = true
         let mut paths: Vec<PathBuf> = vec![];
         dedup_paths(&mut paths);
         assert!(paths.is_empty());
+    }
+
+    // ── Accessor method tests ─────────────────────────────────
+
+    #[test]
+    fn gpu_enabled_accessor() {
+        assert!(Config { no_gpu: None, ..Config::default() }.gpu_enabled());
+        assert!(!Config { no_gpu: Some(true), ..Config::default() }.gpu_enabled());
+        assert!(Config { no_gpu: Some(false), ..Config::default() }.gpu_enabled());
+    }
+
+    #[test]
+    fn docker_enabled_accessor() {
+        assert!(Config { no_docker: None, ..Config::default() }.docker_enabled());
+        assert!(!Config { no_docker: Some(true), ..Config::default() }.docker_enabled());
+        assert!(Config { no_docker: Some(false), ..Config::default() }.docker_enabled());
+    }
+
+    #[test]
+    fn display_enabled_accessor() {
+        assert!(Config { no_display: None, ..Config::default() }.display_enabled());
+        assert!(!Config { no_display: Some(true), ..Config::default() }.display_enabled());
+        assert!(Config { no_display: Some(false), ..Config::default() }.display_enabled());
+    }
+
+    #[test]
+    fn mise_enabled_accessor() {
+        assert!(Config { no_mise: None, ..Config::default() }.mise_enabled());
+        assert!(!Config { no_mise: Some(true), ..Config::default() }.mise_enabled());
+        assert!(Config { no_mise: Some(false), ..Config::default() }.mise_enabled());
     }
 
     // ── File I/O tests (using temp dirs) ───────────────────────

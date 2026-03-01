@@ -1,7 +1,7 @@
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 
 fn is_tty() -> bool {
-    nix::unistd::isatty(nix::libc::STDERR_FILENO).unwrap_or(false)
+    io::stderr().is_terminal()
 }
 
 const RESET: &str = "\x1b[0m";

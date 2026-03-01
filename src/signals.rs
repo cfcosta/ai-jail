@@ -1,6 +1,7 @@
+#[cfg(unix)]
 use nix::sys::signal::{self, SaFlags, SigAction, SigHandler, SigSet, Signal};
+#[cfg(unix)]
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
-use nix::unistd::Pid;
 use std::sync::atomic::{AtomicI32, Ordering};
 
 static CHILD_PID: AtomicI32 = AtomicI32::new(0);
@@ -9,6 +10,7 @@ pub fn set_child_pid(pid: i32) {
     CHILD_PID.store(pid, Ordering::SeqCst);
 }
 
+#[cfg(unix)]
 extern "C" fn forward_signal(sig: nix::libc::c_int) {
     let pid = CHILD_PID.load(Ordering::SeqCst);
     if pid > 0 {
@@ -18,6 +20,7 @@ extern "C" fn forward_signal(sig: nix::libc::c_int) {
     }
 }
 
+#[cfg(unix)]
 pub fn install_handlers() {
     let action = SigAction::new(
         SigHandler::Handler(forward_signal),
@@ -32,7 +35,12 @@ pub fn install_handlers() {
     }
 }
 
-pub fn wait_child(pid: Pid) -> i32 {
+#[cfg(not(unix))]
+pub fn install_handlers() {}
+
+#[cfg(unix)]
+pub fn wait_child(pid: i32) -> i32 {
+    let pid = nix::unistd::Pid::from_raw(pid);
     loop {
         match waitpid(pid, Some(WaitPidFlag::empty())) {
             Ok(WaitStatus::Exited(_, code)) => return code,
@@ -42,4 +50,9 @@ pub fn wait_child(pid: Pid) -> i32 {
             Err(_) => return 1,
         }
     }
+}
+
+#[cfg(not(unix))]
+pub fn wait_child(_pid: i32) -> i32 {
+    1
 }
