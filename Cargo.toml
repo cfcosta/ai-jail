@@ -1,0 +1,16 @@
+[package]
+name = "ai-jail"
+version = "0.1.0"
+edition = "2021"
+description = "Bubblewrap sandbox for AI coding agents"
+license = "GPL-3.0-only"
+
+[dependencies]
+lexopt = "0.3"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+nix = { version = "0.29", features = ["signal", "process", "fs"] }
+
+[profile.release]
+strip = true
+lto = true
